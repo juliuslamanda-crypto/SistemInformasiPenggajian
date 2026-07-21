@@ -12,9 +12,10 @@ import PeriodFilter from './PeriodFilter'
 export default async function PayrollPage({
   searchParams,
 }: {
-  searchParams: { period?: string }
+  searchParams: Promise<{ period?: string }>
 }) {
-  const selectedPeriod = searchParams.period || '2025-01-01'
+  const { period } = await searchParams
+  const selectedPeriod = period || '2025-01-01'
 
   const { data: payrollData, error } = await supabase
     .from('penggajian')
