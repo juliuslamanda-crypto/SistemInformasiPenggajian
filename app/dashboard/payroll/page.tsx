@@ -8,6 +8,7 @@ import {
   PayrollRecord,
 } from '@/lib/payrollHelper'
 import PeriodFilter from './PeriodFilter'
+import Link from 'next/link'
 
 export default async function PayrollPage({
   searchParams,
@@ -105,7 +106,12 @@ export default async function PayrollPage({
               data.map((p) => (
                 <tr key={p.id} className="hover:bg-gray-750 transition-colors">
                   <td className="p-4">
-                    <p className="font-medium text-white">{p.karyawan?.nama}</p>
+                  <Link
+                    href={`/dashboard/payroll/${p.karyawan_id}`}
+                    className="font-medium text-blue-400 hover:text-blue-300 hover:underline"
+  >
+                       {p.karyawan?.nama}
+                  </Link>
                     <p className="text-xs text-gray-400">{p.karyawan?.employee_id}</p>
                   </td>
                   <td className="p-4 text-gray-300 text-xs">
