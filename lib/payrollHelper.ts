@@ -1,8 +1,7 @@
 // lib/payrollHelper.ts
-// ============================================
 // PAYROLL HELPER — Logika kalkulasi penggajian
 // Dataset: Sample Employee Monthly Salary (Kaggle)
-// Perusahaan: ABC (sintetis)
+// Perusahaan: ABC 
 // ============================================
 
 export type PayrollRecord = {
