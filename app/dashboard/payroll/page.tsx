@@ -9,6 +9,7 @@ import {
 } from '@/lib/payrollHelper'
 import PeriodFilter from './PeriodFilter'
 import Link from 'next/link'
+import InputGajiForm from './InputGajiForm'
 
 export default async function PayrollPage({
   searchParams,
@@ -50,6 +51,11 @@ export default async function PayrollPage({
   const stats = hitungStatistik(data)
   const periodOptions = getPeriodOptions()
 
+  const { data: karyawanList } = await supabase
+  .from('karyawan')
+  .select('id, nama, employee_id')
+  .order('nama')
+
   return (
     <div className="p-6 max-w-7xl mx-auto bg-gray-900 min-h-screen text-white">
 
@@ -61,7 +67,10 @@ export default async function PayrollPage({
             Periode {formatPeriod(bulan, tahun)}
           </p>
         </div>
-        <PeriodFilter options={periodOptions} selected={selectedPeriod} />
+        <div className="flex gap-3 items-center">
+  <InputGajiForm karyawanList={karyawanList ?? []} />
+  <PeriodFilter options={periodOptions} selected={selectedPeriod} />
+</div>
       </div>
 
       {/* Summary Cards */}
