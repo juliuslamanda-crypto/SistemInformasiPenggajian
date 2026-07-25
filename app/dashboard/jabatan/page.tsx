@@ -2,13 +2,13 @@
 import { supabase } from '@/lib/supabaseClient'
 
 export default async function JabatanPage() {
-  const { data: jabatanList, error } = await supabase
-    .from('jabatan')
-    .select(`
-      *,
-      karyawan (id)
-    `)
-    .order('nama')
+ const { data: jabatanList, error } = await supabase
+  .from('jabatan')
+  .select(`*, karyawan (id)`)
+  .order('nama')
+
+// Filter hanya jabatan yang punya karyawan
+const jabatanTerpakai = jabatanList?.filter(j => j.karyawan?.length > 0)
 
   if (error) {
     return (
@@ -25,7 +25,7 @@ export default async function JabatanPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-blue-400">Jabatan</h1>
         <p className="text-sm text-gray-400 mt-1">
-          Total: {jabatanList?.length ?? 0} jabatan terdaftar
+          Total: {jabatanTerpakai?.length ?? 0} jabatan terdaftar
         </p>
       </div>
 
@@ -39,7 +39,7 @@ export default async function JabatanPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
-            {jabatanList?.map((j) => (
+            {jabatanTerpakai?.map((j) => (
               <tr key={j.id} className="hover:bg-gray-750 transition-colors">
                 <td className="p-4 text-gray-200">{j.nama}</td>
                 <td className="p-4 text-center">

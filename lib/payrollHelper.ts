@@ -1,132 +1,108 @@
 // lib/payrollHelper.ts
 // ============================================
 // PAYROLL HELPER — Logika kalkulasi penggajian
-// Dataset: Sample Employee Monthly Salary (Kaggle)
-// Perusahaan: ABC Company (data sintetis/dummy)
-// 
-// File ini dipisah dari UI agar:
-// 1. Logika bisa diuji secara independen (unit testing)
-// 2. Mudah dimodifikasi tanpa menyentuh komponen UI
-// 3. Bisa dipakai ulang di banyak halaman
+// Sistem Informasi Penggajian — Lokalisasi Indonesia
 // ============================================
 
 // Tipe data untuk satu record penggajian
-// Dipakai sebagai type annotation di seluruh aplikasi
 export type PayrollRecord = {
-  id: string                  // UUID unik setiap record penggajian
-  karyawan_id: string         // UUID referensi ke tabel karyawan
-  pay_period: string          // Periode gaji dalam format DATE (contoh: "2025-01-01")
-  gross: number               // Gaji kotor sebelum potongan
-  deduction: number           // Total potongan
-  deduction_percentage: number // Persentase potongan dari gross (deduction/gross * 100)
-  net_pay: number             // Gaji bersih = gross - deduction
-  karyawan?: {                // Data karyawan (opsional, diisi saat JOIN)
+  id: string
+  karyawan_id: string
+  bulan: number
+  tahun: number
+
+  // Komponen pendapatan
+  gaji_pokok: number
+  tunjangan_jabatan: number
+  tunjangan_makan: number
+  tunjangan_transport: number
+  gaji_kotor: number
+
+  // Komponen potongan
+  bpjs_kesehatan: number
+  bpjs_ketenagakerjaan: number
+  pph21: number
+  total_potongan: number
+
+  // Hasil akhir
+  gaji_bersih: number
+
+  karyawan?: {
     nama: string
     employee_id: string
     age: number
     tenure_months: number
-    jabatan?: { nama: string }    // Nama jabatan dari tabel jabatan
-    departemen?: { nama: string } // Nama departemen dari tabel departemen
+    jabatan?: { nama: string }
+    departemen?: { nama: string }
   }
 }
 
 /**
- * Memformat angka ke format mata uang internasional
- * 
- * @param amount - Angka yang akan diformat
- * @returns String dalam format "74,922.00"
- * 
- * Contoh: formatSalary(74922) → "74,922.00"
+ * Format angka ke format Rupiah
+ * Contoh: 5000000 → "Rp 5.000.000"
  */
-export function formatSalary(amount: number): string {
-  return Number(amount).toLocaleString('en-US', {
-    minimumFractionDigits: 2, // Minimal 2 angka di belakang koma
-    maximumFractionDigits: 2, // Maksimal 2 angka di belakang koma
-  })
+export function formatRupiah(amount: number): string {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+  }).format(amount)
 }
 
 /**
- * Memformat tanggal pay_period dari format DATE ke nama bulan bahasa Indonesia
- * 
- * @param payPeriod - String tanggal dalam format "YYYY-MM-DD"
- * @returns String nama bulan dan tahun dalam bahasa Indonesia
- * 
- * Contoh: formatPeriod("2025-07-01") → "Juli 2025"
+ * Format bulan dan tahun ke nama bulan Indonesia
+ * Contoh: bulan=7, tahun=2025 → "Juli 2025"
  */
-export function formatPeriod(payPeriod: string): string {
-  // Konversi string tanggal ke objek Date JavaScript
-  const date = new Date(payPeriod)
-  
-  // Format ke bahasa Indonesia, tampilkan bulan panjang dan tahun
+export function formatPeriod(bulan: number, tahun: number): string {
+  const date = new Date(tahun, bulan - 1, 1)
   return date.toLocaleDateString('id-ID', {
-    month: 'long',  // Nama bulan panjang (Januari, Februari, dst)
-    year: 'numeric', // Tahun 4 digit (2025)
+    month: 'long',
+    year: 'numeric',
   })
 }
 
 /**
- * Menghitung ringkasan statistik dari array data penggajian
- * Dipakai untuk mengisi summary cards di halaman payroll dan dashboard
- * 
- * @param data - Array PayrollRecord yang akan dihitung statistiknya
- * @returns Object berisi total dan rata-rata komponen gaji
+ * Hitung ringkasan statistik dari array data penggajian
  */
 export function hitungStatistik(data: PayrollRecord[]) {
-  // Jika data kosong, kembalikan semua nilai 0
-  // Mencegah pembagian dengan 0 saat hitung rata-rata
   if (data.length === 0) return {
-    totalNetPay: 0,
-    rataRataNetPay: 0,
-    totalGross: 0,
-    totalDeduction: 0,
+    totalGajiKotor: 0,
+    totalPotongan: 0,
+    totalGajiBersih: 0,
+    rataRataGajiBersih: 0,
     jumlahKaryawan: 0,
   }
 
-  // Jumlahkan semua gross salary menggunakan reduce
-  // reduce: iterasi array dan akumulasi nilainya ke satu nilai
-  const totalGross = data.reduce((sum, p) => sum + Number(p.gross), 0)
-
-  // Jumlahkan semua deduction
-  const totalDeduction = data.reduce((sum, p) => sum + Number(p.deduction), 0)
-
-  // Jumlahkan semua net pay
-  const totalNetPay = data.reduce((sum, p) => sum + Number(p.net_pay), 0)
-
-  // Hitung rata-rata net pay = total net pay dibagi jumlah karyawan
-  const rataRataNetPay = totalNetPay / data.length
+  const totalGajiKotor    = data.reduce((sum, p) => sum + Number(p.gaji_kotor), 0)
+  const totalPotongan     = data.reduce((sum, p) => sum + Number(p.total_potongan), 0)
+  const totalGajiBersih   = data.reduce((sum, p) => sum + Number(p.gaji_bersih), 0)
+  const rataRataGajiBersih = totalGajiBersih / data.length
 
   return {
-    totalNetPay,
-    rataRataNetPay,
-    totalGross,
-    totalDeduction,
-    jumlahKaryawan: data.length, // Jumlah karyawan yang digaji periode ini
+    totalGajiKotor,
+    totalPotongan,
+    totalGajiBersih,
+    rataRataGajiBersih,
+    jumlahKaryawan: data.length,
   }
 }
 
 /**
- * Menghasilkan daftar opsi periode (bulan) untuk dropdown filter
- * Mencakup 12 bulan tahun 2025 sesuai dataset yang digunakan
- * 
- * @returns Array object {value, label} untuk dirender sebagai <option>
+ * Daftar semua periode yang tersedia (Januari 2025 - Juni 2026)
  */
-export function getPeriodOptions(): { value: string; label: string }[] {
-  // Daftar 12 bulan dalam format DATE (tanggal 1 setiap bulan)
-  const months = [
-    // 2025
-    '2025-01-01', '2025-02-01', '2025-03-01', '2025-04-01',
-    '2025-05-01', '2025-06-01', '2025-07-01', '2025-08-01',
-    '2025-09-01', '2025-10-01', '2025-11-01', '2025-12-01',
-    // 2026
-    '2026-01-01', '2026-02-01', '2026-03-01', '2026-04-01',
-    '2026-05-01', '2026-06-01',
+export function getPeriodOptions(): { bulan: number; tahun: number; label: string; value: string }[] {
+  const periods = [
+    { bulan: 1, tahun: 2025 }, { bulan: 2, tahun: 2025 }, { bulan: 3, tahun: 2025 },
+    { bulan: 4, tahun: 2025 }, { bulan: 5, tahun: 2025 }, { bulan: 6, tahun: 2025 },
+    { bulan: 7, tahun: 2025 }, { bulan: 8, tahun: 2025 }, { bulan: 9, tahun: 2025 },
+    { bulan: 10, tahun: 2025 }, { bulan: 11, tahun: 2025 }, { bulan: 12, tahun: 2025 },
+    { bulan: 1, tahun: 2026 }, { bulan: 2, tahun: 2026 }, { bulan: 3, tahun: 2026 },
+    { bulan: 4, tahun: 2026 }, { bulan: 5, tahun: 2026 }, { bulan: 6, tahun: 2026 },
   ]
 
-  // Konversi setiap tanggal ke format {value, label}
-  // value: string DATE untuk query database
-  // label: nama bulan bahasa Indonesia untuk ditampilkan ke user
-  return months.map(m => ({
-    value: m,           // Contoh: "2025-07-01"
-    label: formatPeriod(m), // Contoh: "Juli 2025"
+  return periods.map(p => ({
+    ...p,
+    label: formatPeriod(p.bulan, p.tahun),
+    value: `${p.bulan}-${p.tahun}`, // Contoh: "7-2025"
   }))
 }
