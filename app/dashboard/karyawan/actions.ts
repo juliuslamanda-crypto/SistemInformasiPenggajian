@@ -1,13 +1,26 @@
-// app/dashboard/karyawan/actions.ts
+// SERVER ACTIONS — Fungsi yang berjalan di server
 // Semua operasi database untuk tabel karyawan diletakkan di sini.
-// Dengan 'use server', kode ini hanya jalan di server — aman dari browser.
+// Dengan 'use server', kode ini hanya jalan di server.
 'use server'
 
-import { supabase } from '@/lib/supabaseClient'
+import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-// Tambah karyawan baru ke database
+/**
+ * Server Action untuk menambahkan karyawan baru ke database.
+ * Dipanggil dari KaryawanForm.tsx (mode tambah) saat admin submit form.
+ *
+ * employee_id digenerate otomatis (5 digit acak) agar admin tidak perlu mengisi manual
+ * 
+ * @param formData - Data dari form HTML, berisi:
+ *   nama, gender, jabatan_id, departemen_id (required)
+ *   age, tenure_months (optional, boleh kosong boleh diisi)
+ * @returns Object {error} jika validasi/insert gagal,
+ *          atau Object {success: true} jika berhasil disimpan
+ */
 export async function tambahKaryawan(formData: FormData) {
+  const supabase = await createClient()
+
   const nama           = formData.get('nama') as string
   const gender         = formData.get('gender') as string
   const age            = parseInt(formData.get('age') as string)
@@ -42,8 +55,22 @@ export async function tambahKaryawan(formData: FormData) {
   return { success: true }
 }
 
-// Update data karyawan yang sudah ada
+/**
+ * Server Action untuk memperbarui data karyawan yang sudah ada.
+ * Dipanggil dari KaryawanForm.tsx (mode edit) saat admin submit perubahan.
+ *
+ * Berbeda dari tambahKaryawan(), function ini butuh `id` (UUID) untuk
+ * menentukan baris mana yang di-update, dan tidak mengubah employee_id.
+ *
+ * @param formData - Data dari form HTML,berisi:
+ *   id (UUID karyawan yang diedit), nama, gender, jabatan_id, departemen_id
+ *   age, tenure_months (optional)
+ * @returns Object {error} jika validasi/update gagal,
+ *          atau Object {success: true} jika berhasil disimpan
+ */
 export async function editKaryawan(formData: FormData) {
+  const supabase = await createClient()
+
   const id            = formData.get('id') as string
   const nama          = formData.get('nama') as string
   const gender        = formData.get('gender') as string
@@ -74,8 +101,19 @@ export async function editKaryawan(formData: FormData) {
   return { success: true }
 }
 
-// Hapus karyawan dari database berdasarkan UUID
+/**
+ * Server Action untuk menghapus karyawan dari database secara permanen. Dipanggil dari KaryawanTable.tsx setelah admin mengonfirmasi dialog hapus.
+ *
+ * skema database menerapkan ON DELETE CASCADE pada foreign key
+ * penggajian_karyawan_id_fkey (tabel penggajian -> karyawan).
+ * 
+ * @param id - UUID karyawan yang akan dihapus (bukan employee_id 5 digit)
+ * @returns Object {error} jika delete gagal,
+ *          atau Object {success: true} jika berhasil dihapus
+ */
 export async function hapusKaryawan(id: string) {
+  const supabase = await createClient()
+
   const { error } = await supabase
     .from('karyawan')
     .delete()

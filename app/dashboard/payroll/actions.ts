@@ -1,14 +1,13 @@
-// app/dashboard/payroll/actions.ts
 // ============================================
-// SERVER ACTIONS — Fungsi yang berjalan di server
+// // SERVER ACTIONS — Fungsi yang berjalan di server
 // Dipakai untuk operasi database yang membutuhkan keamanan
 // 'use server' memastikan kode ini HANYA berjalan di server,
 // tidak pernah terekspos ke browser user
 // ============================================
 'use server'
-
-import { supabase } from '@/lib/supabaseClient'
-import { revalidatePath } from 'next/cache' // Untuk refresh cache halaman setelah data berubah
+import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache' 
+const supabase = await createClient()
 
 /**
  * Server Action untuk menyimpan data penggajian karyawan
