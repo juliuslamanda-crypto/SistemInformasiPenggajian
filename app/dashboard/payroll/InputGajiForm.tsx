@@ -136,19 +136,23 @@ export default function InputGajiForm({
               {/* Pilih karyawan */}
               <div>
                 <label className="block text-xs text-gray-400 mb-1">Karyawan *</label>
-                <select
-                  value={karyawanId}
-                  onChange={e => setKaryawanId(e.target.value)}
-                  required
-                  className="w-full bg-gray-900 border border-gray-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Pilih karyawan...</option>
-                  {karyawanList.map(k => (
-                    <option key={k.id} value={k.id}>
-                      {k.nama} ({k.employee_id})
-                    </option>
-                  ))}
-                </select>
+                <input
+                  list="karyawan-list"
+                  placeholder="Ketik nama atau ID karyawan..."
+                  onChange={e => {
+                   // Cari karyawan berdasarkan teks yang dipilih
+                    const found = karyawanList.find(
+                      k => `${k.nama} (${k.employee_id})` === e.target.value
+                    )
+                    if (found) setKaryawanId(found.id)
+                 }}
+                 className="w-full bg-gray-900 border border-gray-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+               />
+              <datalist id="karyawan-list">
+                {karyawanList.map(k => (
+                  <option key={k.id} value={`${k.nama} (${k.employee_id})`} />
+                ))}
+              </datalist>
               </div>
 
               {/* Pilih periode */}

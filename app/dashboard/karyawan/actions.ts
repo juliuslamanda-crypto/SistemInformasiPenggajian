@@ -21,7 +21,7 @@ export async function tambahKaryawan(formData: FormData) {
   }
 
   // Generate employee_id dan email otomatis supaya tidak perlu diisi manual
-  const employee_id = `EMP-${Date.now()}`
+  const employee_id = String(Math.floor(10000 + Math.random() * 90000))
   const email = `${nama.toLowerCase().replace(/\s+/g, '.').replace(/[^a-z.]/g, '')}.${Date.now()}@abc.com`
 
   const { error } = await supabase.from('karyawan').insert({

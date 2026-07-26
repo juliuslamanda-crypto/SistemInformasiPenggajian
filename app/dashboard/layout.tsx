@@ -52,7 +52,7 @@ export default function DashboardLayout({
     <div className="flex min-h-screen bg-gray-900">
 
       {/* Sidebar */}
-      <aside className="w-56 bg-gray-800 border-r border-gray-700 flex flex-col fixed h-full">
+      <aside className="print:hidden w-56 bg-gray-800 border-r border-gray-700 flex flex-col fixed h-full">
 
         <div className="p-6 border-b border-gray-700">
           <h1 className="font-bold text-white text-sm">Sistem Informasi</h1>
@@ -95,7 +95,7 @@ export default function DashboardLayout({
 
       </aside>
 
-      <main className="flex-1 ml-56">
+      <main className="flex-1 ml-56 print:ml-0">
         {children}
       </main>
 

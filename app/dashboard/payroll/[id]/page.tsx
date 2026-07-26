@@ -63,10 +63,19 @@ export default async function SlipGajiPage({
         {riwayat?.map((p) => (
           <div key={p.id} className="bg-gray-800 rounded-xl border border-gray-700 p-4">
 
-            {/* Header periode */}
+            {/* Header periode (Sudah ditambahkan tombol cetak) */}
             <div className="flex justify-between items-center mb-4">
               <p className="font-medium text-white">{formatPeriod(p.bulan, p.tahun)}</p>
-              <span className="text-green-400 font-bold text-lg">{formatRupiah(p.gaji_bersih)}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-green-400 font-bold text-lg">{formatRupiah(p.gaji_bersih)}</span>
+                {/* Tombol cetak slip gaji */}
+                <Link
+                  href={`/dashboard/payroll/${id}/slip/${p.bulan}/${p.tahun}`}
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded-lg transition-colors"
+                >
+                  Cetak
+                </Link>
+              </div>
             </div>
 
             {/* Komponen pendapatan */}
