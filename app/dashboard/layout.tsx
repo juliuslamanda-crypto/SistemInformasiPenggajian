@@ -4,18 +4,23 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
+import { createClient } from '@/lib/supabase/client'
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+
+  const supabase = createClient()
+
   const pathname = usePathname()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    
+
     // Cek session saat halaman dashboard dibuka
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
