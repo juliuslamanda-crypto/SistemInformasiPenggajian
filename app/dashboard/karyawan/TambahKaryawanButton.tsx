@@ -1,4 +1,3 @@
-// app/dashboard/karyawan/TambahKaryawanButton.tsx
 'use client'
 
 import { useState } from 'react'

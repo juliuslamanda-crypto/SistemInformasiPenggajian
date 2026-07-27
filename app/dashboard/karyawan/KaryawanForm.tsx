@@ -1,4 +1,3 @@
-// app/dashboard/karyawan/KaryawanForm.tsx
 'use client'
 
 import { useState } from 'react'
@@ -108,17 +107,19 @@ export default function KaryawanForm({ jabatanList, departemenList, mode, karyaw
             />
           </div>
 
-          <div>
-            <label className={labelClass}>Masa kerja (bulan)</label>
-            <input
-              type="number"
-              name="tenure_months"
-              defaultValue={karyawan?.tenure_months ?? ''}
-              min="0"
-              placeholder="Contoh: 12"
-              className={inputClass}
-            />
-          </div>
+          {mode === 'edit' && (
+            <div>
+              <label className={labelClass}>Masa kerja (bulan)</label>
+              <input
+                type="number"
+                name="tenure_months"
+                defaultValue={karyawan?.tenure_months ?? ''}
+                min="0"
+                placeholder="Contoh: 12"
+                className={inputClass}
+              />
+            </div>
+          )}
 
           <div>
             <label className={labelClass}>Jabatan *</label>

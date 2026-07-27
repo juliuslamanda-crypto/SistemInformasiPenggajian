@@ -22,6 +22,9 @@ export type PayrollRecord = {
   bpjs_kesehatan: number
   bpjs_ketenagakerjaan: number
   pph21: number
+  hari_alpa : number
+  hari_telat : number
+  denda_absensi : number
   total_potongan: number
 
   // Hasil akhir

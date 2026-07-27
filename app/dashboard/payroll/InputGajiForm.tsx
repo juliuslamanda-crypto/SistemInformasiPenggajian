@@ -1,5 +1,5 @@
 // Form modal untuk input gaji karyawan baru atau update gaji karyawan yg sudah ada.
-// Komponen gaji mengikuti terdiri dari : gaji pokok, tunjangan, BPJS, PPh 21.
+// Komponen gaji mengikuti terdiri dari : gaji pokok, tunjangan, BPJS, PPh 21, denda absensi.
 'use client'
 
 import { useState } from 'react'
@@ -33,17 +33,25 @@ export default function InputGajiForm({
   const [tunjJabatan, setTunjJabatan] = useState('')
   const [tunjMakan, setTunjMakan]     = useState('750000')
   const [tunjTransport, setTunjTransport] = useState('500000')
+  const [hariAlpa, setHariAlpa]   = useState('0')
+  const [hariTelat, setHariTelat] = useState('0')
 
   const gp  = parseFloat(gajiPokok)    || 0
   const tj  = parseFloat(tunjJabatan)  || 0
   const tm  = parseFloat(tunjMakan)    || 0
   const tt  = parseFloat(tunjTransport) || 0
+  const ha  = parseInt(hariAlpa) || 0
+  const ht  = parseInt(hariTelat) || 0
+
+  const RATE_ALPA  = 50000
+  const RATE_TELAT = 30000
 
   const gajiKotor          = gp + tj + tm + tt
   const bpjsKesehatan      = Math.round(gp * 0.01)
   const bpjsKetenagakerjaan = Math.round(gp * 0.02)
   const pph21              = Math.round(gp * 0.05)
-  const totalPotongan      = bpjsKesehatan + bpjsKetenagakerjaan + pph21
+  const dendaAbsensi       = (ha * RATE_ALPA) + (ht * RATE_TELAT)
+  const totalPotongan      = bpjsKesehatan + bpjsKetenagakerjaan + pph21 + dendaAbsensi
   const gajiBersih         = gajiKotor - totalPotongan
 
   async function handleSubmit(e: React.FormEvent) {
@@ -78,6 +86,9 @@ export default function InputGajiForm({
         bpjs_kesehatan: bpjsKesehatan,
         bpjs_ketenagakerjaan: bpjsKetenagakerjaan,
         pph21,
+        hari_alpa: ha,
+        hari_telat: ht,
+        denda_absensi: dendaAbsensi,
         total_potongan: totalPotongan,
         gaji_bersih: gajiBersih,
       }, {
@@ -101,6 +112,8 @@ export default function InputGajiForm({
       setTunjJabatan('')
       setTunjMakan('750000')
       setTunjTransport('500000')
+      setHariAlpa('0')
+      setHariTelat('0')
     }, 2000)
 
     setLoading(false)
@@ -246,6 +259,40 @@ export default function InputGajiForm({
                 </div>
               </div>
 
+              {/* Komponen potongan absensi */}
+              <div className="border-t border-b border-border-strong py-4 space-y-4">
+                <p className="text-xs text-muted uppercase tracking-wide">Potongan absensi</p>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>
+                      Hari alpa
+                      <span className="text-muted/70 ml-1">(Rp 50.000/hari)</span>
+                    </label>
+                    <input
+                      type="number"
+                      value={hariAlpa}
+                      onChange={e => setHariAlpa(e.target.value)}
+                      min="0"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>
+                      Hari telat
+                      <span className="text-muted/70 ml-1">(Rp 30.000/hari)</span>
+                    </label>
+                    <input
+                      type="number"
+                      value={hariTelat}
+                      onChange={e => setHariTelat(e.target.value)}
+                      min="0"
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Preview kalkulasi otomatis */}
               {gp > 0 && (
                 <div className="text-sm">
@@ -269,6 +316,12 @@ export default function InputGajiForm({
                       <span className="text-muted">PPh 21 (5%)</span>
                       <span className="font-mono text-deduction">-{formatRupiah(pph21)}</span>
                     </div>
+                    {dendaAbsensi > 0 && (
+                      <div className="flex justify-between text-xs">
+                        <span className="text-muted">Denda absensi ({ha} alpa, {ht} telat)</span>
+                        <span className="font-mono text-deduction">-{formatRupiah(dendaAbsensi)}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="border-t border-border-strong pt-2 mt-2 flex justify-between items-baseline">
