@@ -1,6 +1,3 @@
-// SERVER ACTIONS — Fungsi yang berjalan di server
-// Semua operasi database untuk tabel karyawan diletakkan di sini.
-// Dengan 'use server', kode ini hanya jalan di server.
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
