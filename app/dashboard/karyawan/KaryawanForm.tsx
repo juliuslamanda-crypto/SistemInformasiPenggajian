@@ -1,6 +1,4 @@
 // app/dashboard/karyawan/KaryawanForm.tsx
-// Form modal yang dipakai untuk dua keperluan: tambah karyawan baru dan edit karyawan.
-// Dipisah jadi Client Component karena butuh useState untuk handle interaksi user.
 'use client'
 
 import { useState } from 'react'
@@ -22,7 +20,7 @@ type Props = {
   jabatanList: Jabatan[]
   departemenList: Departemen[]
   mode: 'tambah' | 'edit'
-  karyawan?: Karyawan // Hanya diisi kalau mode edit
+  karyawan?: Karyawan
   onClose: () => void
 }
 
@@ -37,12 +35,10 @@ export default function KaryawanForm({ jabatanList, departemenList, mode, karyaw
 
     const formData = new FormData(e.currentTarget)
 
-    // Kalau mode edit, tambahkan id karyawan ke formData
     if (mode === 'edit' && karyawan) {
       formData.append('id', karyawan.id)
     }
 
-    // Panggil action yang sesuai berdasarkan mode
     const result = mode === 'tambah'
       ? await tambahKaryawan(formData)
       : await editKaryawan(formData)
@@ -53,45 +49,45 @@ export default function KaryawanForm({ jabatanList, departemenList, mode, karyaw
       return
     }
 
-    // Tutup modal setelah berhasil
     onClose()
     setLoading(false)
   }
 
+  const inputClass = "w-full bg-transparent border-b border-border-hairline text-foreground text-sm py-2 focus:outline-none focus:border-accent transition-colors"
+  const labelClass = "block text-xs text-muted mb-1.5"
+
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-      <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div className="bg-white border border-border-hairline p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
 
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-semibold text-white">
-            {mode === 'tambah' ? 'Tambah Karyawan Baru' : 'Edit Data Karyawan'}
+          <h2 className="font-display text-lg text-foreground">
+            {mode === 'tambah' ? 'Tambah karyawan baru' : 'Edit data karyawan'}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl">✕</button>
+          <button onClick={onClose} className="text-muted hover:text-foreground text-lg leading-none">✕</button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
 
-          {/* Nama lengkap */}
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Nama Lengkap *</label>
+            <label className={labelClass}>Nama lengkap *</label>
             <input
               type="text"
               name="nama"
               defaultValue={karyawan?.nama ?? ''}
               required
               placeholder="Contoh: John Doe"
-              className="w-full bg-gray-900 border border-gray-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputClass}
             />
           </div>
 
-          {/* Gender */}
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Gender *</label>
+            <label className={labelClass}>Gender *</label>
             <select
               name="gender"
               defaultValue={karyawan?.gender ?? ''}
               required
-              className="w-full bg-gray-900 border border-gray-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputClass}
             >
               <option value="">Pilih gender...</option>
               <option value="Male">Laki-laki</option>
@@ -99,9 +95,8 @@ export default function KaryawanForm({ jabatanList, departemenList, mode, karyaw
             </select>
           </div>
 
-          {/* Usia — tidak wajib */}
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Usia</label>
+            <label className={labelClass}>Usia</label>
             <input
               type="number"
               name="age"
@@ -109,31 +104,29 @@ export default function KaryawanForm({ jabatanList, departemenList, mode, karyaw
               min="18"
               max="65"
               placeholder="Contoh: 25"
-              className="w-full bg-gray-900 border border-gray-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputClass}
             />
           </div>
 
-          {/* Masa kerja dalam bulan */}
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Masa Kerja (bulan)</label>
+            <label className={labelClass}>Masa kerja (bulan)</label>
             <input
               type="number"
               name="tenure_months"
               defaultValue={karyawan?.tenure_months ?? ''}
               min="0"
               placeholder="Contoh: 12"
-              className="w-full bg-gray-900 border border-gray-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputClass}
             />
           </div>
 
-          {/* Jabatan — diambil dari database */}
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Jabatan *</label>
+            <label className={labelClass}>Jabatan *</label>
             <select
               name="jabatan_id"
               defaultValue={karyawan?.jabatan_id ?? ''}
               required
-              className="w-full bg-gray-900 border border-gray-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputClass}
             >
               <option value="">Pilih jabatan...</option>
               {jabatanList.map(j => (
@@ -142,14 +135,13 @@ export default function KaryawanForm({ jabatanList, departemenList, mode, karyaw
             </select>
           </div>
 
-          {/* Departemen — diambil dari database */}
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Departemen *</label>
+            <label className={labelClass}>Departemen *</label>
             <select
               name="departemen_id"
               defaultValue={karyawan?.departemen_id ?? ''}
               required
-              className="w-full bg-gray-900 border border-gray-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputClass}
             >
               <option value="">Pilih departemen...</option>
               {departemenList.map(d => (
@@ -158,25 +150,24 @@ export default function KaryawanForm({ jabatanList, departemenList, mode, karyaw
             </select>
           </div>
 
-          {/* Pesan error kalau ada */}
           {error && (
-            <p className="text-red-400 text-sm bg-red-900/20 px-3 py-2 rounded-lg">{error}</p>
+            <p className="text-deduction text-xs">{error}</p>
           )}
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-3 pt-4 border-t border-border-hairline">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-600 rounded-lg text-sm text-gray-300 hover:bg-gray-700 transition-colors"
+              className="flex-1 px-4 py-2 border border-border-hairline text-sm text-foreground/70 hover:border-border-strong transition-colors"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+              className="flex-1 bg-foreground hover:bg-foreground/90 text-background px-4 py-2 text-sm font-medium disabled:opacity-50 transition-colors"
             >
-              {loading ? 'Menyimpan...' : mode === 'tambah' ? 'Tambah' : 'Simpan Perubahan'}
+              {loading ? 'Menyimpan...' : mode === 'tambah' ? 'Tambah' : 'Simpan perubahan'}
             </button>
           </div>
 

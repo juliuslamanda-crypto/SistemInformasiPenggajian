@@ -1,58 +1,64 @@
 // app/dashboard/jabatan/page.tsx
-import { supabase } from '@/lib/supabaseClient'
+import { createClient } from '@/lib/supabase/server'
 
 export default async function JabatanPage() {
- const { data: jabatanList, error } = await supabase
-  .from('jabatan')
-  .select(`*, karyawan (id)`)
-  .order('nama')
+  const supabase = await createClient()
 
-// Filter hanya jabatan yang punya karyawan
-const jabatanTerpakai = jabatanList?.filter(j => j.karyawan?.length > 0)
+  const { data: jabatanList, error } = await supabase
+    .from('jabatan')
+    .select(`*, karyawan (id)`)
+    .order('nama')
+
+  const jabatanTerpakai = jabatanList?.filter(j => j.karyawan?.length > 0)
 
   if (error) {
     return (
-      <div className="p-6 text-red-400">
-        Error: {error.message}
+      <div className="p-8 max-w-xl mx-auto my-10">
+        <div className="bg-white border border-deduction/30 p-6 text-deduction text-sm">
+          Error: {error.message}
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto bg-gray-900 min-h-screen text-white">
+    <div className="p-8 max-w-3xl mx-auto min-h-screen">
+      <div className="bg-white border border-border-hairline p-8">
 
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-blue-400">Jabatan</h1>
-        <p className="text-sm text-gray-400 mt-1">
-          Total: {jabatanTerpakai?.length ?? 0} jabatan terdaftar
-        </p>
-      </div>
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-2 h-2 rounded-full bg-accent" />
+            <p className="text-sm font-medium tracking-wide text-foreground">Jabatan</p>
+          </div>
+          <h1 className="font-display text-xl text-foreground/80">
+            {jabatanTerpakai?.length ?? 0} jabatan terdaftar
+          </h1>
+        </div>
 
-      {/* Tabel */}
-      <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-700 text-gray-300">
-            <tr>
-              <th className="p-4">Nama Jabatan</th>
-              <th className="p-4 text-center">Jumlah Karyawan</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-700">
-            {jabatanTerpakai?.map((j) => (
-              <tr key={j.id} className="hover:bg-gray-750 transition-colors">
-                <td className="p-4 text-gray-200">{j.nama}</td>
-                <td className="p-4 text-center">
-                  <span className="bg-blue-900/40 text-blue-300 px-2 py-1 rounded text-xs font-medium">
-                    {j.karyawan?.length ?? 0} karyawan
-                  </span>
-                </td>
+        <div className="border-t border-border-strong">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-border-hairline">
+                <th className="py-3 text-xs font-medium text-muted">Nama jabatan</th>
+                <th className="py-3 text-xs font-medium text-muted text-right">Jumlah karyawan</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {jabatanTerpakai?.map((j) => (
+                <tr key={j.id} className="border-b border-border-hairline hover:bg-background transition-colors">
+                  <td className="py-3 text-foreground">{j.nama}</td>
+                  <td className="py-3 text-right">
+                    <span className="font-mono text-xs text-accent">
+                      {j.karyawan?.length ?? 0} karyawan
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
+      </div>
     </div>
   )
 }

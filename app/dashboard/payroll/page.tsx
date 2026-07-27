@@ -1,5 +1,5 @@
 // app/dashboard/payroll/page.tsx
-import { supabase } from '@/lib/supabaseClient'
+import { createClient } from '@/lib/supabase/server'
 import {
   formatRupiah,
   formatPeriod,
@@ -16,8 +16,9 @@ export default async function PayrollPage({
 }: {
   searchParams: Promise<{ period?: string }>
 }) {
+  const supabase = await createClient()
+
   const { period } = await searchParams
-  // Default: Januari 2025, format: "bulan-tahun"
   const selectedPeriod = period || '1-2025'
   const [bulan, tahun] = selectedPeriod.split('-').map(Number)
 
@@ -40,9 +41,11 @@ export default async function PayrollPage({
 
   if (error) {
     return (
-      <div className="p-6 bg-red-900/20 border border-red-500/30 rounded-xl text-red-400">
-        <p className="font-bold">Error mengambil data penggajian</p>
-        <p className="text-sm mt-1">{error.message}</p>
+      <div className="p-8 max-w-6xl mx-auto">
+        <div className="bg-white border border-deduction/30 p-6 text-deduction">
+          <p className="font-medium text-sm">Error mengambil data penggajian</p>
+          <p className="text-xs mt-1">{error.message}</p>
+        </div>
       </div>
     )
   }
@@ -52,106 +55,111 @@ export default async function PayrollPage({
   const periodOptions = getPeriodOptions()
 
   const { data: karyawanList } = await supabase
-  .from('karyawan')
-  .select('id, nama, employee_id')
-  .order('nama')
+    .from('karyawan')
+    .select('id, nama, employee_id')
+    .order('nama')
 
   return (
-    <div className="p-6 max-w-7xl mx-auto bg-gray-900 min-h-screen text-white">
+    <div className="p-8 max-w-6xl mx-auto min-h-screen">
+      <div className="bg-white border border-border-hairline p-8">
 
-      {/* Header */}
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-blue-400">Penggajian</h1>
-          <p className="text-sm text-gray-400 mt-1">
-            Periode {formatPeriod(bulan, tahun)}
-          </p>
+        {/* Header */}
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-2 h-2 rounded-full bg-accent" />
+              <p className="text-sm font-medium tracking-wide text-foreground">Penggajian</p>
+            </div>
+            <h1 className="font-display text-xl text-foreground/80">
+              Periode {formatPeriod(bulan, tahun)}
+            </h1>
+          </div>
+          <div className="flex gap-3 items-center">
+            <InputGajiForm karyawanList={karyawanList ?? []} />
+            <PeriodFilter options={periodOptions} selected={selectedPeriod} />
+          </div>
         </div>
-        <div className="flex gap-3 items-center">
-  <InputGajiForm karyawanList={karyawanList ?? []} />
-  <PeriodFilter options={periodOptions} selected={selectedPeriod} />
-</div>
-      </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-gray-800 rounded-xl border border-gray-700 p-4">
-          <p className="text-xs text-gray-400 mb-1">Karyawan digaji</p>
-          <p className="text-2xl font-bold text-white">{stats.jumlahKaryawan}</p>
+        {/* Ringkasan — hairline row, konsisten sama dashboard */}
+        <div className="grid grid-cols-4 border-t border-b border-border-strong py-4 mb-8">
+          <div>
+            <p className="text-xs text-muted mb-1">Karyawan digaji</p>
+            <p className="font-display text-2xl text-foreground">{stats.jumlahKaryawan}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted mb-1">Total gaji kotor</p>
+            <p className="font-mono text-lg text-foreground">{formatRupiah(stats.totalGajiKotor)}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted mb-1">Total potongan</p>
+            <p className="font-mono text-lg text-deduction">{formatRupiah(stats.totalPotongan)}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted mb-1">Rata-rata gaji bersih</p>
+            <p className="font-mono text-lg text-net-pay">{formatRupiah(stats.rataRataGajiBersih)}</p>
+          </div>
         </div>
-        <div className="bg-gray-800 rounded-xl border border-gray-700 p-4">
-          <p className="text-xs text-gray-400 mb-1">Total Gaji Kotor</p>
-          <p className="text-lg font-bold text-blue-400">{formatRupiah(stats.totalGajiKotor)}</p>
-        </div>
-        <div className="bg-gray-800 rounded-xl border border-gray-700 p-4">
-          <p className="text-xs text-gray-400 mb-1">Total Potongan</p>
-          <p className="text-lg font-bold text-red-400">{formatRupiah(stats.totalPotongan)}</p>
-        </div>
-        <div className="bg-gray-800 rounded-xl border border-gray-700 p-4">
-          <p className="text-xs text-gray-400 mb-1">Rata-rata Gaji Bersih</p>
-          <p className="text-lg font-bold text-green-400">{formatRupiah(stats.rataRataGajiBersih)}</p>
-        </div>
-      </div>
 
-      {/* Tabel Penggajian */}
-      <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-700 text-gray-300">
-            <tr>
-              <th className="p-4">Karyawan</th>
-              <th className="p-4">Jabatan</th>
-              <th className="p-4">Gaji Pokok</th>
-              <th className="p-4">Tunjangan</th>
-              <th className="p-4">Gaji Kotor</th>
-              <th className="p-4">Potongan</th>
-              <th className="p-4">Gaji Bersih</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-700">
-            {data.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="p-8 text-center text-gray-500">
-                  Tidak ada data penggajian untuk periode ini
-                </td>
+        {/* Tabel penggajian — hairline row, bukan card striped abu-abu */}
+        <div className="border-t border-border-strong">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-border-hairline">
+                <th className="py-3 text-xs font-medium text-muted">Karyawan</th>
+                <th className="py-3 text-xs font-medium text-muted">Jabatan</th>
+                <th className="py-3 text-xs font-medium text-muted">Gaji pokok</th>
+                <th className="py-3 text-xs font-medium text-muted">Tunjangan</th>
+                <th className="py-3 text-xs font-medium text-muted">Gaji kotor</th>
+                <th className="py-3 text-xs font-medium text-muted">Potongan</th>
+                <th className="py-3 text-xs font-medium text-muted">Gaji bersih</th>
               </tr>
-            ) : (
-              data.map((p) => (
-                <tr key={p.id} className="hover:bg-gray-750 transition-colors">
-                  <td className="p-4">
-                    <Link
-                      href={`/dashboard/payroll/${p.karyawan_id}`}
-                      className="font-medium text-blue-400 hover:text-blue-300 hover:underline"
-                    >
-                      {p.karyawan?.nama}
-                    </Link>
-                    <p className="text-xs text-gray-400">{p.karyawan?.employee_id}</p>
-                  </td>
-                  <td className="p-4 text-xs">
-                    <p className="text-gray-300">{p.karyawan?.jabatan?.nama ?? '-'}</p>
-                    <p className="text-gray-500">{p.karyawan?.departemen?.nama ?? '-'}</p>
-                  </td>
-                  <td className="p-4 text-gray-300">{formatRupiah(p.gaji_pokok)}</td>
-                  <td className="p-4 text-blue-300 text-xs">
-                    <p>Jabatan: {formatRupiah(p.tunjangan_jabatan)}</p>
-                    <p>Makan: {formatRupiah(p.tunjangan_makan)}</p>
-                    <p>Transport: {formatRupiah(p.tunjangan_transport)}</p>
-                  </td>
-                  <td className="p-4 text-white font-medium">{formatRupiah(p.gaji_kotor)}</td>
-                  <td className="p-4 text-xs">
-                    <p className="text-red-400">BPJS Kes: -{formatRupiah(p.bpjs_kesehatan)}</p>
-                    <p className="text-red-400">BPJS TK: -{formatRupiah(p.bpjs_ketenagakerjaan)}</p>
-                    <p className="text-red-400">PPh 21: -{formatRupiah(p.pph21)}</p>
-                  </td>
-                  <td className="p-4">
-                    <span className="text-green-400 font-bold">{formatRupiah(p.gaji_bersih)}</span>
+            </thead>
+            <tbody>
+              {data.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-10 text-center text-muted text-sm">
+                    Tidak ada data penggajian untuk periode ini
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : (
+                data.map((p) => (
+                  <tr key={p.id} className="border-b border-border-hairline hover:bg-background transition-colors">
+                    <td className="py-3">
+                      <Link
+                        href={`/dashboard/payroll/${p.karyawan_id}`}
+                        className="font-medium text-foreground hover:text-accent transition-colors"
+                      >
+                        {p.karyawan?.nama}
+                      </Link>
+                      <p className="text-xs text-muted">{p.karyawan?.employee_id}</p>
+                    </td>
+                    <td className="py-3 text-xs">
+                      <p className="text-foreground/80">{p.karyawan?.jabatan?.nama ?? '-'}</p>
+                      <p className="text-muted">{p.karyawan?.departemen?.nama ?? '-'}</p>
+                    </td>
+                    <td className="py-3 font-mono text-xs text-foreground/80">{formatRupiah(p.gaji_pokok)}</td>
+                    <td className="py-3 text-xs text-foreground/70">
+                      <p>Jabatan: {formatRupiah(p.tunjangan_jabatan)}</p>
+                      <p>Makan: {formatRupiah(p.tunjangan_makan)}</p>
+                      <p>Transport: {formatRupiah(p.tunjangan_transport)}</p>
+                    </td>
+                    <td className="py-3 font-mono text-xs font-medium text-foreground">{formatRupiah(p.gaji_kotor)}</td>
+                    <td className="py-3 text-xs text-deduction">
+                      <p>BPJS Kes: -{formatRupiah(p.bpjs_kesehatan)}</p>
+                      <p>BPJS TK: -{formatRupiah(p.bpjs_ketenagakerjaan)}</p>
+                      <p>PPh 21: -{formatRupiah(p.pph21)}</p>
+                    </td>
+                    <td className="py-3">
+                      <span className="font-mono text-sm font-medium text-net-pay">{formatRupiah(p.gaji_bersih)}</span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
+      </div>
     </div>
   )
 }

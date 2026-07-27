@@ -20,7 +20,7 @@ export default function PeriodFilter({
     <select
       value={selected}
       onChange={handleChange}
-      className="bg-gray-800 border border-gray-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="bg-transparent border-b border-border-hairline text-foreground text-sm py-2 focus:outline-none focus:border-accent transition-colors"
     >
       {options.map(opt => (
         <option key={opt.value} value={opt.value}>

@@ -1,4 +1,3 @@
-// app/dashboard/layout.tsx
 'use client'
 
 import Link from 'next/link'
@@ -19,12 +18,8 @@ export default function DashboardLayout({
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    
-
-    // Cek session saat halaman dashboard dibuka
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
-        // Belum login → redirect ke login
         router.push('/Login')
       } else {
         setLoading(false)
@@ -44,27 +39,29 @@ export default function DashboardLayout({
     window.location.href = '/Login'
   }
 
-  // Tampilkan loading sementara cek session
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <p className="text-gray-400 text-sm">Memuat...</p>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted text-sm">Memuat...</p>
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-900">
+    <div className="flex min-h-screen bg-background">
 
       {/* Sidebar */}
-      <aside className="print:hidden w-56 bg-gray-800 border-r border-gray-700 flex flex-col fixed h-full">
+      <aside className="print:hidden w-48 bg-background border-r border-border-hairline flex flex-col fixed h-full">
 
-        <div className="p-6 border-b border-gray-700">
-          <h1 className="font-bold text-white text-sm">Sistem Informasi</h1>
-          <p className="text-xs text-blue-400 mt-0.5">Penggajian — ABC Company</p>
+        <div className="p-5 border-b border-border-hairline flex items-center gap-2.5">
+          <div className="w-2 h-2 rounded-full bg-accent shrink-0" />
+          <div>
+            <h1 className="font-display font-semibold text-foreground text-sm leading-tight">Sistem Informasi</h1>
+            <p className="text-[11px] text-muted mt-0.5">Penggajian — ABC Company</p>
+          </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 p-3 space-y-0.5">
           {navItems.map((item) => {
             const isActive = item.href === '/dashboard'
               ? pathname === '/dashboard'
@@ -74,10 +71,10 @@ export default function DashboardLayout({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center px-3 py-2 rounded-lg text-sm transition-colors ${
+                className={`block px-3 py-1.5 text-sm border-l-2 transition-colors ${
                   isActive
-                    ? 'bg-blue-600 text-white font-medium'
-                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    ? 'border-accent text-accent font-medium'
+                    : 'border-transparent text-muted hover:text-foreground'
                 }`}
               >
                 {item.label}
@@ -86,21 +83,20 @@ export default function DashboardLayout({
           })}
         </nav>
 
-        {/* Tombol logout */}
-        <div className="p-4 border-t border-gray-700">
+        <div className="p-4 border-t border-border-hairline">
           <button
             onClick={handleLogout}
-            className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            className="w-full text-left px-3 py-1.5 text-sm text-muted hover:text-foreground transition-colors"
           >
             Keluar
           </button>
-          <p className="text-xs text-gray-600 mt-2">Dataset: Kaggle</p>
-          <p className="text-xs text-gray-600">Sample Employee Monthly Salary</p>
+          <p className="text-[10px] text-muted/70 mt-2 px-3">Dataset: Kaggle</p>
+          <p className="text-[10px] text-muted/70 px-3">Sample Employee Monthly Salary</p>
         </div>
 
       </aside>
 
-      <main className="flex-1 ml-56 print:ml-0">
+      <main className="flex-1 ml-48 print:ml-0">
         {children}
       </main>
 

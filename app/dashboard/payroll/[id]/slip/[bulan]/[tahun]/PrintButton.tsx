@@ -1,13 +1,16 @@
-// PrintButton.tsx — tombol print, harus Client Component karena pakai window.print()
+//untuk tombol print, 
 'use client'
+
+import { Printer } from 'lucide-react'
 
 export default function PrintButton() {
   return (
     <button
       onClick={() => window.print()}
-      className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg transition-colors font-medium"
+      className="flex items-center gap-1.5 bg-foreground hover:bg-foreground/90 text-background text-xs px-4 py-2 transition-colors font-medium"
     >
-      🖨️ Cetak Slip Gaji
+      <Printer className="w-3.5 h-3.5" strokeWidth={2} />
+      Cetak slip gaji
     </button>
   )
 }
