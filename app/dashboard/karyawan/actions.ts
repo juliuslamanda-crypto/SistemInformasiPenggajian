@@ -20,23 +20,24 @@ export async function tambahKaryawan(formData: FormData) {
 
   const nama           = formData.get('nama') as string
   const gender         = formData.get('gender') as string
+  const email          = formData.get('email') as string
   const age            = parseInt(formData.get('age') as string)
   const tenure_months  = parseInt(formData.get('tenure_months') as string)
   const jabatan_id     = formData.get('jabatan_id') as string
   const departemen_id  = formData.get('departemen_id') as string
 
   // Semua field wajib diisi sebelum data bisa disimpan
-  if (!nama || !gender || !jabatan_id || !departemen_id) {
-    return { error: 'Nama, gender, jabatan, dan departemen wajib diisi.' }
+  if (!nama || !email || !gender || !jabatan_id || !departemen_id) {
+    return { error: 'Nama, email, gender, jabatan, dan departemen wajib diisi.' }
   }
 
   // Generate employee_id dan email otomatis supaya tidak perlu diisi manual
   const employee_id = String(Math.floor(10000 + Math.random() * 90000))
-  const email = `${nama.toLowerCase().replace(/\s+/g, '.').replace(/[^a-z.]/g, '')}.${Date.now()}@abc.com`
 
   const { error } = await supabase.from('karyawan').insert({
     employee_id,
     nama,
+    email,
     gender,
     age: isNaN(age) ? null : age,
     tenure_months: isNaN(tenure_months) ? 0 : tenure_months,

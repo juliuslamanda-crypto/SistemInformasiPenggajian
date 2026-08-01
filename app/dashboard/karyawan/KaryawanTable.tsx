@@ -11,6 +11,7 @@ type Karyawan   = {
   id: string
   employee_id: string
   nama: string
+  email:string
   gender: string
   age: number | null
   tenure_months: number | null

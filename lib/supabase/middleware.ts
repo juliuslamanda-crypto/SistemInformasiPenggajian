@@ -22,13 +22,42 @@ export async function updateSession(request: NextRequest) {
       },
     }
   )
-  
+
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
+  const isDashboardRoute = request.nextUrl.pathname.startsWith('/dashboard')
+  const isKaryawanRoute = request.nextUrl.pathname.startsWith('/karyawan-portal')
+
+  // Belum login, tapi coba akses halaman terproteksi -> lempar ke Login
+  if (!user && (isDashboardRoute || isKaryawanRoute)) {
     const url = request.nextUrl.clone()
     url.pathname = '/Login'
     return NextResponse.redirect(url)
+  }
+
+  // Sudah login -> cek dia admin atau karyawan
+  if (user) {
+    const { data: karyawan } = await supabase
+      .from('karyawan')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    const isKaryawan = !!karyawan
+
+    // Karyawan mencoba akses area admin -> tolak, lempar ke portal karyawan
+    if (isKaryawan && isDashboardRoute) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/karyawan-portal'
+      return NextResponse.redirect(url)
+    }
+
+    // Admin mencoba akses area karyawan -> tolak, lempar ke dashboard admin
+    if (!isKaryawan && isKaryawanRoute) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse

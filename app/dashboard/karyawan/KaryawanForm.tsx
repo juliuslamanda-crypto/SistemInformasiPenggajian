@@ -8,6 +8,7 @@ type Departemen = { id: string; nama: string }
 type Karyawan   = {
   id: string
   nama: string
+  email: string
   gender: string
   age: number | null
   tenure_months: number | null
@@ -79,6 +80,18 @@ export default function KaryawanForm({ jabatanList, departemenList, mode, karyaw
               className={inputClass}
             />
           </div>
+
+          <div>
+            <label className={labelClass}>Email *</label>
+            <input
+              type="email"
+              name="email"
+              defaultValue={karyawan?.email ?? ''}
+              required
+              placeholder="Contoh: nama@abc.com"
+              className={inputClass}
+            />
+          </div>x``
 
           <div>
             <label className={labelClass}>Gender *</label>
