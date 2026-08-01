@@ -47,7 +47,7 @@ export default async function KaryawanPortalPage() {
           </h1>
         </div>
 
-        <div className="grid grid-cols-3 border-t border-b border-border-strong py-4 mb-6">
+        <div className="grid grid-cols-4 border-t border-b border-border-strong py-4 mb-6">
           <div>
             <p className="text-xs text-muted mb-1">Jabatan</p>
             <p className="text-sm text-foreground">{karyawan.jabatan?.nama ?? '-'}</p>
